@@ -10,8 +10,8 @@ class Api extends REST_Controller {
 		parent::__construct();
 		$this->load->model('DAO');
 	}
-
-	public function measure_get(){
+	//function to get the groups related to its career
+	public function group_get(){
 		$id = $this->get('id');
 		if(count($this->get())>1){
 			$response = array(
@@ -19,15 +19,15 @@ class Api extends REST_Controller {
 				"status_code"=>409,
 				"message"=>"Too many params was sent",
 				"validations"=>array(
-					"id"=>"Send Id (Get) to get specific measure, or empty to get all measure"
+					"id"=>"Send Id (Get) to get specific measure, or empty to get all groups"
 				),
 				"data"=>null
 			);
 		}else{
 			if($id){
-				$response = $this->DAO->entitySelection('measure',array('idMeasure'=>$id),TRUE);
+				$response = $this->DAO->entitySelection('groups',array('idGroup'=>$id),TRUE);
 			}else{
-				$response = $this->DAO->entitySelection('measure');
+				$response = $this->DAO->entitySelection('groups');
 			}
 		}
 		$this->response($response,200);
@@ -127,17 +127,17 @@ class Api extends REST_Controller {
 	}
 
 	
-	//function post measure of temperature
-	function measuretemperature_post(){
+	//function to save the data of groups
+	function group_post(){
 		if(count($this->post())==0){
 			$response = array(
 				"status"=>"error",
 				"status_code"=>409,
 				"message"=>"No data was sent",
 				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, must be between -10 and 60 degrees Celsius",
-					"sensor"=>"Required, previously registered"
+					"name"=>"Required ",
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+					"fkCareer"=>"Required, previously registered"
 				),
 				"data"=>null
 			);
@@ -147,16 +147,17 @@ class Api extends REST_Controller {
 				"status_code"=>409,
 				"message"=>"Too many data was sent",
 				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, must be between -10 and 60 degrees Celsius",
-					"sensor"=>"Required, previously registered"
+					"name"=>"Required ",
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+					"fkCareer"=>"Required, previously registered"
 				),
 				"data"=>null
 			);
 		}else{
 			$this->form_validation->set_data($this->post());
-			$this->form_validation->set_rules('value','value','required|callback_temperature_valids');
-			$this->form_validation->set_rules('sensor','sensor','callback_valid_idsensor');
+			$this->form_validation->set_rules('name','name','required|callback_group_exist');
+			$this->form_validation->set_rules('schedule','schedule','required');
+			$this->form_validation->set_rules('career','career','required|callback_valid_career');
 
 
 			if($this->form_validation->run()==FALSE){
@@ -169,11 +170,11 @@ class Api extends REST_Controller {
 				);
 			}else{
 				$data = array(
-					"dateMeasure"=>$this->post('date'),
-					"valueMeasure"=>$this->post('value'),
-					"fkSensor"=>$this->post('sensor')
+					"nameGroup"=>$this->post('name'),
+					"schedule"=>$this->post('schedule'),
+					"fkCareer"=>$this->post('career')
 				);
-				$response = $this->DAO->insertData("measure",$data);
+				$response = $this->DAO->insertData("groups",$data);
 			}
 		}
 		$this->response($response,200);
@@ -455,12 +456,12 @@ class Api extends REST_Controller {
 
 	//extra validations
 
-	function valid_idsensor($str){
-		$systemExists = $this->DAO->entitySelection('sensor',array('idSensor' => $str),TRUE);
+	function valid_career($str){
+		$systemExists = $this->DAO->entitySelection('careers',array('idCareer' => $str),TRUE);
 		if($systemExists['data']){
 				return TRUE;
 	    }else{
-			$this->form_validation->set_message('valid_idsensor','The field {field} doesnt exists');
+			$this->form_validation->set_message('valid_career','The field {field} doesnt exists');
 			return FALSE;
 		}
 	}
@@ -527,6 +528,22 @@ class Api extends REST_Controller {
         	return true;
         } 
     }
+	
+    //method to validate the name of careers
+	function career_exists($str){
+
+		if(strlen($str)<5 || strlen($str)>40){
+			$this->form_validation->set_message('career_exists','The field {field} must be between 5 and 40 characters in length');
+			return false;
+		}
+		$nameExists =  $this->DAO->entitySelection('careers',array('nameCareer'=>$str),TRUE);
+		if($nameExists['data']){
+			$this->form_validation->set_message('career_exists','The field {field} already exists');
+			return false;
+		}else{
+			return true;
+		}
+	}
 
 
 }
