@@ -43,7 +43,7 @@ class Api extends REST_Controller {
 				"message"=>"No data was sent",
 				"validations"=>array(
 					"name"=>"Required, between 3 and 30 characters in length",
-					"latitude"=>"Required, between 3 and 20 characters in length",
+					"duration"=>"Required, between 3 and 20 characters in length",
 					"inscription"=>"Required, between 3 and 20 characters in length",
 					"tiution"=>"Required, previously registered"
 				),
