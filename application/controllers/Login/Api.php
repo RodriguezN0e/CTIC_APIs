@@ -10,7 +10,7 @@ class Api extends REST_Controller {
     function __construct(){
         parent::__construct();
         $this->load->model('DAO');
-    }
+    }//segundo ejemplo de update
 
 
     function login_get(){
