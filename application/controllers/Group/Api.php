@@ -137,7 +137,7 @@ class Api extends REST_Controller {
 				"validations"=>array(
 					"name"=>"Required ",
 					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-					"fkCareer"=>"Required, previously registered"
+					"career"=>"Required, previously registered"
 				),
 				"data"=>null
 			);
@@ -149,7 +149,7 @@ class Api extends REST_Controller {
 				"validations"=>array(
 					"name"=>"Required ",
 					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-					"fkCareer"=>"Required, previously registered"
+					"career"=>"Required, previously registered"
 				),
 				"data"=>null
 			);
@@ -530,15 +530,15 @@ class Api extends REST_Controller {
     }
 	
     //method to validate the name of careers
-	function career_exists($str){
+	function group_exist($str){
 
-		if(strlen($str)<5 || strlen($str)>40){
-			$this->form_validation->set_message('career_exists','The field {field} must be between 5 and 40 characters in length');
+		if(strlen($str)<4 || strlen($str)>20){
+			$this->form_validation->set_message('group_exist','The field {field} must be between 4 and 20 characters in length');
 			return false;
 		}
-		$nameExists =  $this->DAO->entitySelection('careers',array('nameCareer'=>$str),TRUE);
+		$nameExists =  $this->DAO->entitySelection('groups',array('nameGroup'=>$str),TRUE);
 		if($nameExists['data']){
-			$this->form_validation->set_message('career_exists','The field {field} already exists');
+			$this->form_validation->set_message('group_exist','The field {field} already exists');
 			return false;
 		}else{
 			return true;
