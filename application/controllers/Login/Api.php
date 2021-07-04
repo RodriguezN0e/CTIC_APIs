@@ -81,6 +81,6 @@ class Api extends REST_Controller {
             }
         }
         $this->response($response,200);
-    }
+    }//este es un ejemplo de update
 
 }
