@@ -33,29 +33,7 @@ class Api extends REST_Controller {
 		$this->response($response,200);
 	}
 
-	//measure by date
-	public function measurebydate_get(){
-		$id = $this->get('id');
-		if(count($this->get())>1){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many params was sent",
-				"validations"=>array(
-					"id"=>"Send Id (Get) to get specific measure, or empty to get all measure"
-				),
-				"data"=>null
-			);
-		}else{
-			if($id){
-				$response = $this->DAO->entitySelection('measure',array('dateMeasure'=>$id),TRUE);
-			}else{
-				$response = $this->DAO->entitySelection('measure');
-			}
-		}
-		$this->response($response,200);
-	}
-
+	
 
 
 	//obtener medidas por medio de un sensor en especifico
@@ -81,50 +59,6 @@ class Api extends REST_Controller {
 		$this->response($response,200);
 	}
 
-	//obtener medidas de los sensores de una estacion en especifico
-	public function measurebystation_get(){
-		$id = $this->get('id');
-		if(count($this->get())>1){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many params was sent",
-				"validations"=>array(
-					"id"=>"Send Id (Get) to get specific measures belonging to a sensor"
-				),
-				"data"=>null
-			);
-		}else{
-			if($id){
-				$response = $this->DAO->entitySelection('measuresByStation',array('idStation'=>$id),FALSE);
-			}else{
-				$response = $this->DAO->entitySelection('measuresByStation');
-			}
-		}
-		$this->response($response,200);
-	}
-
-	public function measurebysensorwithsta_get(){
-		$id = $this->get('id');
-		if(count($this->get())>1){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many params was sent",
-				"validations"=>array(
-					"id"=>"Send Id (Get) to get specific measures belonging to a sensor"
-				),
-				"data"=>null
-			);
-		}else{
-			if($id){
-				$response = $this->DAO->entitySelection('measuresByStation',array('idSensor'=>$id),FALSE);
-			}else{
-				$response = $this->DAO->entitySelection('measuresByStation');
-			}
-		}
-		$this->response($response,200);
-	}
 
 	
 	//function to save the data of groups
@@ -136,6 +70,7 @@ class Api extends REST_Controller {
 				"message"=>"No data was sent",
 				"validations"=>array(
 					"name"=>"Required ",
+					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
 					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
 					"career"=>"Required, previously registered"
 				),
@@ -148,6 +83,7 @@ class Api extends REST_Controller {
 				"message"=>"Too many data was sent",
 				"validations"=>array(
 					"name"=>"Required ",
+					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
 					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
 					"career"=>"Required, previously registered"
 				),
@@ -156,6 +92,7 @@ class Api extends REST_Controller {
 		}else{
 			$this->form_validation->set_data($this->post());
 			$this->form_validation->set_rules('name','name','required|callback_group_exist');
+			$this->form_validation->set_rules('day','day','required');
 			$this->form_validation->set_rules('schedule','schedule','required');
 			$this->form_validation->set_rules('career','career','required|callback_valid_career');
 
@@ -171,64 +108,11 @@ class Api extends REST_Controller {
 			}else{
 				$data = array(
 					"nameGroup"=>$this->post('name'),
+					"dayScheduleGroup"=>$this->post('day'),
 					"schedule"=>$this->post('schedule'),
 					"fkCareer"=>$this->post('career')
 				);
 				$response = $this->DAO->insertData("groups",$data);
-			}
-		}
-		$this->response($response,200);
-	}
-
-
-
-	//function post measure of humidity
-	function measurehumidity_post(){
-		if(count($this->post())==0){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"No data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else if(count($this->post())>4){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else{
-			$this->form_validation->set_data($this->post());
-			$this->form_validation->set_rules('value','value','required|callback_humidity_valids');
-			$this->form_validation->set_rules('sensor','sensor','callback_valid_idsensor');
-
-
-			if($this->form_validation->run()==FALSE){
-				$response = array(
-					"status"=>"error",
-					"status_code"=>409,
-					"message"=>"Validations failed, see validations object for more details",
-					"validations"=>$this->form_validation->error_array(),
-					"data"=>null
-				);
-			}else{
-				$data = array(
-					"dateMeasure"=>$this->post('date'),
-					"valueMeasure"=>$this->post('value'),
-					"fkSensor"=>$this->post('sensor')
-				);
-				$response = $this->DAO->insertData("measure",$data);
 			}
 		}
 		$this->response($response,200);
@@ -288,62 +172,11 @@ class Api extends REST_Controller {
 	}
 
 
-	//function post measure of particulate matter 10
-	function measureparticulatematterten_post(){
-		if(count($this->post())==0){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"No data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else if(count($this->post())>4){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else{
-			$this->form_validation->set_data($this->post());
-			$this->form_validation->set_rules('value','value','required|callback_particulatematterten_valids');
-			$this->form_validation->set_rules('sensor','sensor','callback_valid_idsensor');
-
-
-			if($this->form_validation->run()==FALSE){
-				$response = array(
-					"status"=>"error",
-					"status_code"=>409,
-					"message"=>"Validations failed, see validations object for more details",
-					"validations"=>$this->form_validation->error_array(),
-					"data"=>null
-				);
-			}else{
-				$data = array(
-					"dateMeasure"=>$this->post('date'),
-					"valueMeasure"=>$this->post('value'),
-					"fkSensor"=>$this->post('sensor')
-				);
-				$response = $this->DAO->insertData("measure",$data);
-			}
-		}
-		$this->response($response,200);
-	}
-
-	function measure_put(){
+	//function to update infromation of a group
+	function group_put(){
 		$id = $this->get('id');
 		if($id){
-			$measureExists = $this->DAO->entitySelection('measure',array('idMeasure'=>$id),TRUE);
+			$measureExists = $this->DAO->entitySelection('groups',array('idGroup'=>$id),TRUE);
 			if($measureExists['data']){
 				if(count($this->put())==0){
 					$response = array(
@@ -351,9 +184,10 @@ class Api extends REST_Controller {
 						"status_code"=>409,
 						"message"=>"No data was sent",
 						"validations"=>array(
-							"date"=>"Required, correct format",
-							"value"=>"Required, between 3 and 10 characters in length",
-							"sensor"=>"Required, previously registered"
+							"name"=>"Required ",
+							"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
+							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+							"career"=>"Required, previously registered"
 						),
 						"data"=>null
 					);
@@ -363,16 +197,19 @@ class Api extends REST_Controller {
 						"status_code"=>409,
 						"message"=>"Too many data was sent",
 						"validations"=>array(
-							"date"=>"Required, correct format",
-							"value"=>"Required, between 3 and 10 characters in length",
-							"sensor"=>"Required, previously registered"
+							"name"=>"Required ",
+							"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
+							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+							"career"=>"Required, previously registered"
 						),
 						"data"=>null
 					);
 				}else{
 					$this->form_validation->set_data($this->put());
-					$this->form_validation->set_rules('value','value','required|max_length[10]|min_length[3]');
-					$this->form_validation->set_rules('sensor','sensor','callback_valid_idsensor');
+					$this->form_validation->set_rules('name','name','required');
+					$this->form_validation->set_rules('day','day','required');
+					$this->form_validation->set_rules('schedule','schedule','required');
+					$this->form_validation->set_rules('career','career','required|callback_valid_career');
 
 
 					if($this->form_validation->run()==FALSE){
@@ -386,11 +223,12 @@ class Api extends REST_Controller {
 					}else{
 						$data = array(
 							//name in database => alias
-							"dateMeasure"=>$this->put('date'),
-							"valueMeasure"=>$this->put('value'),
-							"fkSensor"=>$this->put('sensor')
+							"nameGroup"=>$this->put('name'),
+							"dayScheduleGroup"=>$this->put('day'),
+							"schedule"=>$this->put('schedule'),
+							"fkCareer"=>$this->put('career')
 						);
-						$response = $this->DAO->updateData("measure",$data,array('idMeasure'=>$id));
+						$response = $this->DAO->updateData("groups",$data,array('idGroup'=>$id));
 					}
 				}
 			}else{
@@ -400,9 +238,10 @@ class Api extends REST_Controller {
 					"message"=>"Id doesn't exists",
 					"validations"=>array(
 						"id" => "Required, valid id",
-						"date"=>"Required, correct format",
-						"value"=>"Required, between 3 and 10 characters in length",
-						"sensor"=>"Required, previously registered"
+						"name"=>"Required ",
+						"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
+						"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+						"career"=>"Required, previously registered"
 					),
 					"data"=>null
 				);
@@ -415,9 +254,10 @@ class Api extends REST_Controller {
 				"message"=>"Id wasn't sent",
 				"validations"=>array(
 					"id" => "Required, valid id",
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
+					"name"=>"Required ",
+					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
+					"career"=>"Required, previously registered"
 				),
 				"data"=>null
 			);
@@ -426,17 +266,17 @@ class Api extends REST_Controller {
 	}
 
 
-	function measure_delete(){
+	function group_delete(){
 		$id = $this->get('id');
 		if($id){
-			$measureExists = $this->DAO->selectEntity('measure',array('idMeasure' => $id),TRUE);
+			$measureExists = $this->DAO->selectEntity('groups',array('idGroup' => $id),TRUE);
 			if($measureExists['data']){
-				$response = $this->DAO->deleteData('measure',array('idMeasure' => $id));
+				$response = $this->DAO->deleteData('groups',array('idGroup' => $id));
 			}else{
 				$response = array(
 					"status" => "error",
 					"status_code" => 409,
-					"message" => "Measure id, doesn't exists",
+					"message" => "Group id, doesn't exists",
 					"validations" => NULL,
 					"data" => NULL
 				);
@@ -445,7 +285,7 @@ class Api extends REST_Controller {
 			$response = array(
 					"status" => "error",
 					"status_code" => 409,
-					"message" => "Measure id, wasn't sent",
+					"message" => "Group id, wasn't sent",
 					"validations" => NULL,
 					"data" => NULL
 			);
@@ -492,42 +332,6 @@ class Api extends REST_Controller {
         
     }
 
-
-    //functions of a specific values between a range for the humedy
-    function humidity_valids($value){
-
-        if($value<0 || $value>99){
-            $this->form_validation->set_message('humidity_valids','The field {field} must be between 0% and 99%');
-            return false;
-        }else{
-        	return true;
-        } 
-    }
-
-
-
-    //funcion of a specific values between a range for the pm2.5
-    function particulatemattertwofive_valids($value){
-
-        if($value<0 || $value>500){
-            $this->form_validation->set_message('particulatemattertwofive_valids','The field {field} must be between 0 and 500');
-            return false;
-        }else{
-        	return true;
-        } 
-    }
-
-
-    //funcion of a specific values between a range for the pm10
-    function particulatematterten_valids($value){
-
-        if($value<0 || $value>604){
-            $this->form_validation->set_message('particulatematterten_valids','The field {field} must be between 0 and 604');
-            return false;
-        }else{
-        	return true;
-        } 
-    }
 	
     //method to validate the name of careers
 	function group_exist($str){
