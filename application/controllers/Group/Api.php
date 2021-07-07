@@ -71,8 +71,7 @@ class Api extends REST_Controller {
 				"validations"=>array(
 					"name"=>"Required ",
 					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-					"career"=>"Required, previously registered"
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 				),
 				"data"=>null
 			);
@@ -84,18 +83,15 @@ class Api extends REST_Controller {
 				"validations"=>array(
 					"name"=>"Required ",
 					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-					"career"=>"Required, previously registered"
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 				),
 				"data"=>null
 			);
 		}else{
 			$this->form_validation->set_data($this->post());
 			$this->form_validation->set_rules('name','name','required|callback_group_exist');
-			$this->form_validation->set_rules('day','day','required');
-			$this->form_validation->set_rules('schedule','schedule','required');
-			$this->form_validation->set_rules('career','career','required|callback_valid_career');
-
+			$this->form_validation->set_rules('day','day','required|callback_day_valid');
+			$this->form_validation->set_rules('schedule','schedule','required|callback_schedule_valid');
 
 			if($this->form_validation->run()==FALSE){
 				$response = array(
@@ -109,68 +105,13 @@ class Api extends REST_Controller {
 				$data = array(
 					"nameGroup"=>$this->post('name'),
 					"dayScheduleGroup"=>$this->post('day'),
-					"schedule"=>$this->post('schedule'),
-					"fkCareer"=>$this->post('career')
+					"schedule"=>$this->post('schedule')
 				);
 				$response = $this->DAO->insertData("groups",$data);
 			}
 		}
 		$this->response($response,200);
 	}
-
-
-	//function post measure of particulate matter 2.5
-	function measureparticulatemattertwofive_post(){
-		if(count($this->post())==0){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"No data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else if(count($this->post())>4){
-			$response = array(
-				"status"=>"error",
-				"status_code"=>409,
-				"message"=>"Too many data was sent",
-				"validations"=>array(
-					"date"=>"Required, correct format",
-					"value"=>"Required, between 3 and 10 characters in length",
-					"sensor"=>"Required, previously registered"
-				),
-				"data"=>null
-			);
-		}else{
-			$this->form_validation->set_data($this->post());
-			$this->form_validation->set_rules('value','value','required|callback_particulatemattertwofive_valids');
-			$this->form_validation->set_rules('sensor','sensor','callback_valid_idsensor');
-
-
-			if($this->form_validation->run()==FALSE){
-				$response = array(
-					"status"=>"error",
-					"status_code"=>409,
-					"message"=>"Validations failed, see validations object for more details",
-					"validations"=>$this->form_validation->error_array(),
-					"data"=>null
-				);
-			}else{
-				$data = array(
-					"dateMeasure"=>$this->post('date'),
-					"valueMeasure"=>$this->post('value'),
-					"fkSensor"=>$this->post('sensor')
-				);
-				$response = $this->DAO->insertData("measure",$data);
-			}
-		}
-		$this->response($response,200);
-	}
-
 
 	//function to update infromation of a group
 	function group_put(){
@@ -186,8 +127,7 @@ class Api extends REST_Controller {
 						"validations"=>array(
 							"name"=>"Required ",
 							"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-							"career"=>"Required, previously registered"
+							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 						),
 						"data"=>null
 					);
@@ -199,17 +139,15 @@ class Api extends REST_Controller {
 						"validations"=>array(
 							"name"=>"Required ",
 							"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-							"career"=>"Required, previously registered"
+							"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 						),
 						"data"=>null
 					);
 				}else{
 					$this->form_validation->set_data($this->put());
 					$this->form_validation->set_rules('name','name','required');
-					$this->form_validation->set_rules('day','day','required');
-					$this->form_validation->set_rules('schedule','schedule','required');
-					$this->form_validation->set_rules('career','career','required|callback_valid_career');
+					$this->form_validation->set_rules('day','day','required|callback_day_valid');
+					$this->form_validation->set_rules('schedule','schedule','required|callback_schedule_valid');
 
 
 					if($this->form_validation->run()==FALSE){
@@ -225,8 +163,7 @@ class Api extends REST_Controller {
 							//name in database => alias
 							"nameGroup"=>$this->put('name'),
 							"dayScheduleGroup"=>$this->put('day'),
-							"schedule"=>$this->put('schedule'),
-							"fkCareer"=>$this->put('career')
+							"schedule"=>$this->put('schedule')
 						);
 						$response = $this->DAO->updateData("groups",$data,array('idGroup'=>$id));
 					}
@@ -240,8 +177,7 @@ class Api extends REST_Controller {
 						"id" => "Required, valid id",
 						"name"=>"Required ",
 						"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-						"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-						"career"=>"Required, previously registered"
+						"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 					),
 					"data"=>null
 				);
@@ -256,8 +192,7 @@ class Api extends REST_Controller {
 					"id" => "Required, valid id",
 					"name"=>"Required ",
 					"day"=>"Required, must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo",
-					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'",
-					"career"=>"Required, previously registered"
+					"schedule"=>"Required, must be '9:00 A.M. - 1:00 P.M.','1:00 P.M. - 5:00 P.M.'"
 				),
 				"data"=>null
 			);
@@ -306,16 +241,30 @@ class Api extends REST_Controller {
 		}
 	}
 
-	function gender_valid($str){
+	function schedule_valid($str){
         if($str){
-            if($str=="F" || $str == "M"){
+            if($str=="9:00 A.M. - 1:00 P.M." || $str == "1:00 P.M. - 5:00 P.M."){
                 return true;
             }else{
-                $this->form_validation->set_message('gender_valid','The {field} must be F or M');
+                $this->form_validation->set_message('schedule_valid','The {field} must be 9:00 A.M. - 1:00 P.M. or 1:00 P.M. - 5:00 P.M.');
                 return false;
             }
         }else{
-            $this->form_validation->set_message('gender_valid','The {field} must be F or M');
+            $this->form_validation->set_message('schedule_valid','The {field} must be 9:00 A.M. - 1:00 P.M. or 1:00 P.M. - 5:00 P.M.');
+            return false;
+        }
+    }
+
+    function day_valid($str){
+        if($str){
+            if($str=="Lunes" || $str == "Martes" || $str == "Miercoles" || $str == "Jueves" || $str == "Viernes" || $str == "Sabado" || $str == "Domingo"){
+                return true;
+            }else{
+                $this->form_validation->set_message('day_valid','The {field} must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo');
+                return false;
+            }
+        }else{
+            $this->form_validation->set_message('day_valid','The {field} must be Lunes, Martes, Miercoles, Jueves, Viernes, Sabado o Domingo');
             return false;
         }
     }
